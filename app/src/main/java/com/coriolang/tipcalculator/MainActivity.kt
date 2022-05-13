@@ -1,13 +1,16 @@
 package com.coriolang.tipcalculator
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import com.google.android.material.slider.Slider
 
 class MainActivity : AppCompatActivity() {
+
+    private var bill: Double = 0.0
+    private var tip: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,9 +20,6 @@ class MainActivity : AppCompatActivity() {
         val slider = findViewById<Slider>(R.id.slider)
         val textView = findViewById<TextView>(R.id.text_view)
 
-        var bill = ""
-        var tip: String
-
         editText.doAfterTextChanged {
             if (editText.text.isEmpty()) {
                 textView.text = ""
@@ -27,25 +27,30 @@ class MainActivity : AppCompatActivity() {
                 return@doAfterTextChanged
             }
 
-            bill = editText.text.toString()
-            tip = slider.value.toInt().toString()
-            textView.text = getEnteredDataAsString(bill, tip)
+            updateTipAmount(editText, slider, textView)
         }
 
-        slider.addOnChangeListener { _, value, _ ->
+        slider.addOnChangeListener { _, _, _ ->
             if (editText.text != null) {
                 if (editText.text.isEmpty()) {
                     return@addOnChangeListener
                 }
             }
 
-            tip = value.toInt().toString()
-            textView.text = getEnteredDataAsString(bill, tip)
+            updateTipAmount(editText, slider, textView)
         }
     }
 
-    private fun getEnteredDataAsString(
-        bill: String,
-        tip: String
-    ) = "Bill value: $bill, tip percentage: $tip%"
+    private fun updateTipAmount(editText: EditText, slider: Slider, textView: TextView) {
+        bill = editText.text.toString().toDouble()
+        tip = slider.value.toInt().toString().toInt()
+
+        val result = calculateTipAmount(bill, tip)
+
+        textView.text = getTipAmountString(result)
+    }
+
+    private fun calculateTipAmount(bill: Double, tip: Int) = (bill * tip) / 100
+
+    private fun getTipAmountString(result: Double) = "Tip amount: %.2f".format(result)
 }
